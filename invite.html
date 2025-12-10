@@ -317,15 +317,30 @@
   <script>
     (function () {
       function applyInviteInfo() {
-        if (!window.DemoWallet || !window.DemoWallet.getInviteInfo) return;
-        var info = window.DemoWallet.getInviteInfo();
         var linkEl = document.getElementById("inviteLink");
         var codeEl = document.getElementById("inviteCode");
-        if (linkEl && info.link) {
-          linkEl.textContent = info.link;
+
+        // Read defaults from the DOM first
+        var currentCode = codeEl ? (codeEl.textContent || codeEl.innerText || "").trim() : "";
+
+        if (window.DemoWallet && window.DemoWallet.getInviteInfo) {
+          var info = window.DemoWallet.getInviteInfo() || {};
+          if (info.code && codeEl) {
+            currentCode = info.code;
+            codeEl.textContent = info.code;
+          }
+          if (linkEl && info.link) {
+            linkEl.textContent = info.link;
+            return;
+          }
         }
-        if (codeEl && info.code) {
-          codeEl.textContent = info.code;
+
+        // If no explicit link is provided but we have a code, build a smart default
+        if (linkEl && currentCode) {
+          var origin = window.location.origin || "";
+          var path = "/signup";
+          var url = origin + path + "?ref=" + encodeURIComponent(currentCode);
+          linkEl.textContent = url;
         }
       }
 
